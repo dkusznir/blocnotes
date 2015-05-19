@@ -14,7 +14,6 @@
 
 @property (nonatomic, strong) NSString *text;
 @property (nonatomic, strong) CreateNoteViewController *createNoteVC;
-@property (nonatomic, strong) NSIndexPath *path;
 
 @end
 
@@ -63,10 +62,8 @@
 {
     if ([[segue identifier] isEqualToString:@"showDetail"])
     {
-        //NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        self.path = [self.tableView indexPathForSelectedRow];
-        //NSManagedObject *object = [[self fetchedResultsController] objectAtIndexPath:indexPath];
-        NSManagedObject *object = [[self fetchedResultsController] objectAtIndexPath:self.path];
+        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+        NSManagedObject *object = [[self fetchedResultsController] objectAtIndexPath:indexPath];
         DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
         [controller setDelegate:self];
         [controller setDetailItem:object];
@@ -247,9 +244,17 @@
 - (void)didUpdate:(DetailViewController *)sender withText:(NSString *)text
 {
     NSString *newText = text;
-    NSManagedObject *object = [[self fetchedResultsController] objectAtIndexPath:self.path];
-    [object setValue:newText forKey:@"content"];
-
+    
+    NSManagedObjectContext *context = [self.fetchedResultsController managedObjectContext];
+    NSEntityDescription *entity = [[self.fetchedResultsController fetchRequest] entity];
+    NSManagedObject *newManagedObject = [NSEntityDescription insertNewObjectForEntityForName:[entity name] inManagedObjectContext:context];
+    
+    [newManagedObject setValue:[NSDate date] forKey:@"timeStamp"];
+    [newManagedObject setValue:newText forKey:@"content"];
+    
+    NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+    [self tableView:self.tableView commitEditingStyle:UITableViewCellEditingStyleDelete forRowAtIndexPath:indexPath];
+    
 }
 
 
