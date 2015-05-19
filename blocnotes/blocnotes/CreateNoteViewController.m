@@ -13,6 +13,7 @@
 @property (nonatomic, strong) UITextView *textView;
 @property (nonatomic, strong) UIBarButtonItem *saveButton;
 
+
 @end
 
 static NSString *placeholderText;
@@ -28,7 +29,7 @@ static NSString *placeholderText;
 - (void)createViews
 {
     placeholderText = NSLocalizedString(@"Write your note....", @"Placeholder Text");
-    self.textView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
+    self.textView = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, (CGRectGetMaxY(self.view.frame) - 20))];
     self.textView.delegate = self;
     self.textView.text = placeholderText;
     self.textView.textColor = [UIColor lightGrayColor];

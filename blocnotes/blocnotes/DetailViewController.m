@@ -13,6 +13,7 @@
 @property (nonatomic, strong) UITextView *textView;
 @property (nonatomic, strong) UIBarButtonItem *saveButton;
 @property (weak, nonatomic) UILabel *detailDescriptionLabel;
+@property (nonatomic, strong) UILabel *createdDateAndTime;
 
 @end
 
@@ -50,19 +51,25 @@
 
 - (void)createViews
 {
-    self.textView = [[UITextView alloc] initWithFrame:CGRectMake(0, 100, self.view.bounds.size.width, self.view.bounds.size.height)];
+    self.textView = [[UITextView alloc] initWithFrame:CGRectMake(0, 60, self.view.bounds.size.width, (CGRectGetMaxY(self.view.frame) - 80))];
     self.textView.delegate = self;
     self.textView.textColor = [UIColor blackColor];
     self.textView.text  = [[self.detailItem valueForKey:@"content"] description];
     [self.textView setFont:[UIFont fontWithName:@"HelveticaNeue" size:20]];
-    //NSLog(@"%@", [[self.detailItem valueForKey:@"content"] description]);
     
     self.saveButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(didSave:)];
     
-    [self.view addSubview:self.textView];
-    self.navigationItem.rightBarButtonItem = self.saveButton;
+    self.createdDateAndTime = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(self.textView.frame), self.view.bounds.size.width, 20)];
+    NSString *currentDateAndTime = [[self.detailItem valueForKey:@"timeStamp"] description];
+    self.createdDateAndTime.text = [NSString stringWithFormat:@"Created At: %@", currentDateAndTime];
+    self.createdDateAndTime.textColor = [UIColor whiteColor];
+    self.createdDateAndTime.textAlignment = NSTextAlignmentCenter;
+    self.createdDateAndTime.backgroundColor = [UIColor colorWithRed:0 green:0 blue:153.0 alpha:1];
+    [self.createdDateAndTime setFont:[UIFont fontWithName:@"HelveticaNeue" size:15]];
     
-    self.detailDescriptionLabel.text = [[self.detailItem valueForKey:@"timeStamp"] description];
+    [self.view addSubview:self.textView];
+    [self.view addSubview:self.createdDateAndTime];
+    self.navigationItem.rightBarButtonItem = self.saveButton;
     
 }
 

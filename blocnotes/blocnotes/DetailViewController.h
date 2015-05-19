@@ -20,7 +20,6 @@
 
 @property (nonatomic, weak) NSObject <DetailViewControllerDelegate> *delegate;
 @property (strong, nonatomic) id detailItem;
-//@property (weak, nonatomic) IBOutlet UILabel *detailDescriptionLabel;
 @property (nonatomic, strong) NSString *text;
 
 @end
