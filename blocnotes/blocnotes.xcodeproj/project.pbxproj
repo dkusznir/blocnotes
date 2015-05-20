@@ -450,6 +450,7 @@
 				AA3DA5FD1B069D5A001D7036 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		AA3DA5FE1B069D5A001D7036 /* Build configuration list for PBXNativeTarget "blocnotesTests" */ = {
 			isa = XCConfigurationList;
@@ -458,6 +459,7 @@
 				AA3DA6001B069D5A001D7036 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 

@@ -7,7 +7,6 @@
 //
 
 #import "CreateNoteViewController.h"
-#import "DetailViewController.h"
 
 @interface CreateNoteViewController () <UITextViewDelegate, UIAlertViewDelegate>
 
