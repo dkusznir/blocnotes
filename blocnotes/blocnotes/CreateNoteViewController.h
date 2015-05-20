@@ -6,20 +6,12 @@
 //  Copyright (c) 2015 dkusznir. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import "DetailViewController.h"
 
 @class CreateNoteViewController;
 
-@protocol CreateNoteViewDelegate <NSObject>
+@interface CreateNoteViewController : DetailViewController
 
-- (void)noteController:(CreateNoteViewController *)sender didSaveWithText:(NSString *)text;
-
-@end
-
-@interface CreateNoteViewController : UIViewController
-
-@property (nonatomic, weak) NSObject <CreateNoteViewDelegate> *delegate;
-@property (nonatomic, strong) NSString *text;
 @property (nonatomic, assign) BOOL isWritingNote;
 
 @end
