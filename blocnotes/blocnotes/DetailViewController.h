@@ -12,11 +12,11 @@
 
 @protocol DetailViewControllerDelegate <NSObject>
 
-- (void)didUpdate:(DetailViewController *)sender withText:(NSString *)text isNew:(BOOL)newNote;
+- (void)didUpdate:(DetailViewController *)sender withText:(NSString *)text andTitle:(NSString *)title isNew:(BOOL)newNote;
 
 @end
 
-@interface DetailViewController : UIViewController
+@interface DetailViewController : UIViewController <UITextViewDelegate, UIAlertViewDelegate, UITextFieldDelegate>
 
 @property (nonatomic, weak) NSObject <DetailViewControllerDelegate> *delegate;
 @property (strong, nonatomic) id detailItem;
@@ -26,6 +26,8 @@
 @property (nonatomic, strong) UILabel *createdDateAndTime;
 @property (nonatomic, strong) UILabel *savedLabel;
 @property (weak, nonatomic) UILabel *detailDescriptionLabel;
+@property (nonatomic, strong) UITextField *noteTitle;
+@property (nonatomic, strong) NSString *noteTitleText;
 
 - (void)createViews;
 - (void)displaySavedButton;
