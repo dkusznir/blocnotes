@@ -28,6 +28,7 @@
 @property (weak, nonatomic) UILabel *detailDescriptionLabel;
 @property (nonatomic, strong) UITextField *noteTitle;
 @property (nonatomic, strong) NSString *noteTitleText;
+@property (nonatomic, strong) UIBarButtonItem *shareButton;
 
 - (void)createViews;
 - (void)displaySavedButton;

@@ -56,7 +56,7 @@ static NSString *titlePlaceholderText;
 {
     [self setUpNoteTitleField];
     [self setUpTextView];
-    [self setUpSaveButton];
+    [self setUpNavButtons];
     [self setUpCreatedLabel];
     [self setUpAnimatedSavedLabel];
 }
@@ -68,6 +68,8 @@ static NSString *titlePlaceholderText;
         self.textView.text = NSLocalizedString(@"", @"Remove Placeholder Text");
         self.textView.textColor = [UIColor blackColor];
     }
+    
+    [self.saveButton setEnabled:YES];
 
 }
 
@@ -89,22 +91,27 @@ static NSString *titlePlaceholderText;
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
-    if ([self.noteTitle.text isEqualToString:titlePlaceholderText])
+    if (self.noteTitle.placeholder == titlePlaceholderText)
     {
-        self.noteTitle.text = NSLocalizedString(@"", @"Remove Title Placeholder Text");
+        self.noteTitle.placeholder = nil;
         self.noteTitle.textColor = [UIColor blackColor];
     }
+    
+    [self.saveButton setEnabled:YES];
 
 }
 
 - (void)textFieldDidEndEditing:(UITextField *)textField
 {
-    self.noteTitleText = self.noteTitle.text;
-    
     if ([self.noteTitle.text isEqualToString:@""])
     {
-        self.noteTitle.text = titlePlaceholderText;
+        self.noteTitle.placeholder = titlePlaceholderText;
         self.noteTitle.textColor = [UIColor lightGrayColor];
+    }
+    
+    else
+    {
+        self.noteTitleText = self.noteTitle.text;
     }
     
 }
@@ -115,12 +122,13 @@ static NSString *titlePlaceholderText;
     // Dispose of any resources that can be recreated.
 }
 
-- (void)didSave:(NSString *)text
+- (void)didSave
 {
     [self textViewDidEndEditing:self.textView];
     [self textFieldDidEndEditing:self.noteTitle];
     [self.delegate didUpdate:self withText:self.text andTitle:self.noteTitleText isNew:NO];
     [self displaySavedButton];
+    [self.shareButton setEnabled:YES];
 }
 
 - (void)displaySavedButton
@@ -134,19 +142,30 @@ static NSString *titlePlaceholderText;
     } completion:nil];
 }
 
+- (void)didShare
+{
+    if (self.textView.text && self.noteTitle.text)
+    {
+        NSArray *itemsToShare = [[NSArray alloc] initWithObjects:self.textView.text, self.noteTitle.text, nil];
+        
+        UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:itemsToShare applicationActivities:nil];
+        [self presentViewController:activityVC animated:YES completion:nil];
+    }
+}
+
 #pragma mark - Set Up Buttons & Labels
 
 - (void)setUpTextView
 {
+    placeholderText = NSLocalizedString(@"Write your note....", @"Placeholder Text");
     self.textView = [[UITextView alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(self.noteTitle.frame), self.view.bounds.size.width, (CGRectGetMaxY(self.view.frame) - 120))];
     self.textView.delegate = self;
     self.textView.textColor = [UIColor blackColor];
     self.textView.text  = [[self.detailItem valueForKey:@"content"] description];
     [self.textView setFont:[UIFont fontWithName:@"HelveticaNeue" size:20]];
     
-    if (self.textView.text == nil)
+    if ([self.textView.text isEqualToString:@""])
     {
-        placeholderText = NSLocalizedString(@"Write your note....", @"Placeholder Text");
         self.textView.text = placeholderText;
         self.textView.textColor = [UIColor lightGrayColor];
     }
@@ -158,8 +177,12 @@ static NSString *titlePlaceholderText;
 - (void)setUpCreatedLabel
 {
     self.createdDateAndTime = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(self.textView.frame), self.view.bounds.size.width, 20)];
-    NSString *currentDateAndTime = [[self.detailItem valueForKey:@"timeStamp"] description];
-    self.createdDateAndTime.text = [NSString stringWithFormat:@"Created At: %@", currentDateAndTime];
+    NSDate *date = [self.detailItem valueForKey:@"timeStamp"];
+    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+    [dateFormat setDateStyle:NSDateFormatterMediumStyle];
+    [dateFormat setTimeStyle:NSDateFormatterShortStyle];
+    NSString *dateToDisplay = [dateFormat stringFromDate:date];
+    self.createdDateAndTime.text = [NSString stringWithFormat:@"Created: %@", dateToDisplay];
     self.createdDateAndTime.textColor = [UIColor whiteColor];
     self.createdDateAndTime.textAlignment = NSTextAlignmentCenter;
     self.createdDateAndTime.backgroundColor = [UIColor colorWithRed:0 green:0 blue:153.0 alpha:1];
@@ -185,15 +208,32 @@ static NSString *titlePlaceholderText;
     [self.view addSubview:self.savedLabel];
 }
 
-- (void)setUpSaveButton
+- (void)setUpNavButtons
 {
-    self.saveButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(didSave:)];
+    self.saveButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemSave target:self action:@selector(didSave)];
+    self.shareButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(didShare)];
     
-    self.navigationItem.rightBarButtonItem = self.saveButton;
+    NSArray *navButtons = [[NSArray alloc] initWithObjects:self.saveButton, self.shareButton, nil];
+    
+    self.navigationItem.rightBarButtonItems = navButtons;
+    
+    if ([self.textView.text isEqualToString:@""] || [self.textView.text isEqualToString:placeholderText] || [self.noteTitle.text isEqualToString:@""] || [self.noteTitle.text isEqualToString:titlePlaceholderText])
+    {
+        [self.shareButton setEnabled:NO];
+        [self.saveButton setEnabled:NO];
+    }
+    
+    else
+    {
+        [self.shareButton setEnabled:YES];
+        [self.saveButton setEnabled:YES];
+    }
+
 }
 
 - (void)setUpNoteTitleField
 {
+    titlePlaceholderText = NSLocalizedString(@"Add a title....", @"Title Placeholder Text");
     self.noteTitle = [[UITextField alloc] initWithFrame:CGRectMake(0, 70, self.view.bounds.size.width, 30)];
     self.noteTitle.text = [[self.detailItem valueForKey:@"noteTitle"] description];
     self.noteTitle.textAlignment = NSTextAlignmentLeft;
@@ -202,11 +242,11 @@ static NSString *titlePlaceholderText;
     [self.noteTitle setBorderStyle:UITextBorderStyleLine];
     self.noteTitle.layer.borderWidth = 1.5f;
     self.noteTitle.layer.borderColor = [[UIColor blackColor] CGColor];
+    self.noteTitle.delegate = self;
     
-    if (self.noteTitle.text == nil)
+    if ([self.noteTitle.text isEqualToString:@""])
     {
-        titlePlaceholderText = NSLocalizedString(@"Add a title....", @"Title Placeholder Text");
-        self.noteTitle.text = placeholderText;
+        self.noteTitle.placeholder = titlePlaceholderText;;
         self.noteTitle.textColor = [UIColor lightGrayColor];
     }
     

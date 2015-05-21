@@ -26,20 +26,15 @@
     [super createViews];
     
     self.createdDateAndTime.hidden = YES;
-    
 }
 
-- (void)setText:(NSString *)text
-{
-    [super setText:text];
-}
-
-- (void)didSave:(UIBarButtonItem *)sender
+- (void)didSave
 {
     [self textViewDidEndEditing:self.textView];
     [self textFieldDidEndEditing:self.noteTitle];
     [self.delegate didUpdate:self withText:self.text andTitle:self.noteTitleText isNew:YES];
     [self displaySavedButton];
+    [self.shareButton setEnabled:YES];
 
 }
 
