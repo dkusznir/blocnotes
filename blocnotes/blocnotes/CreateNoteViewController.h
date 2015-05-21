@@ -12,6 +12,4 @@
 
 @interface CreateNoteViewController : DetailViewController
 
-@property (nonatomic, assign) BOOL isWritingNote;
-
 @end
