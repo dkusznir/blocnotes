@@ -10,12 +10,6 @@
 
 @interface DetailViewController () <UITextViewDelegate, UIAlertViewDelegate>
 
-@property (nonatomic, strong) UITextView *textView;
-@property (nonatomic, strong) UIBarButtonItem *saveButton;
-@property (weak, nonatomic) UILabel *detailDescriptionLabel;
-@property (nonatomic, strong) UILabel *createdDateAndTime;
-@property (nonatomic, strong) UILabel *savedLabel;
-
 @end
 
 @implementation DetailViewController
@@ -85,7 +79,7 @@
 - (void)didSave:(NSString *)text
 {
     [self textViewDidEndEditing:self.textView];
-    [self.delegate didUpdate:self withText:self.text];
+    [self.delegate didUpdate:self withText:self.text isNew:NO];
     [self displaySavedButton];
 }
 
