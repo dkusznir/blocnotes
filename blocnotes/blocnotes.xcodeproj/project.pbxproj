@@ -48,6 +48,7 @@
 		AA3DA5F71B069D5A001D7036 /* blocnotesTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = blocnotesTests.m; sourceTree = "<group>"; };
 		AA3DA6011B091F0E001D7036 /* CreateNoteViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CreateNoteViewController.h; sourceTree = "<group>"; };
 		AA3DA6021B091F0E001D7036 /* CreateNoteViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CreateNoteViewController.m; sourceTree = "<group>"; };
+		AA76FC471B0D046700D1CE03 /* blocnotes v2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "blocnotes v2.xcdatamodel"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -467,9 +468,10 @@
 		AA3DA5DC1B069D59001D7036 /* blocnotes.xcdatamodeld */ = {
 			isa = XCVersionGroup;
 			children = (
+				AA76FC471B0D046700D1CE03 /* blocnotes v2.xcdatamodel */,
 				AA3DA5DD1B069D59001D7036 /* blocnotes.xcdatamodel */,
 			);
-			currentVersion = AA3DA5DD1B069D59001D7036 /* blocnotes.xcdatamodel */;
+			currentVersion = AA76FC471B0D046700D1CE03 /* blocnotes v2.xcdatamodel */;
 			path = blocnotes.xcdatamodeld;
 			sourceTree = "<group>";
 			versionGroupType = wrapper.xcdatamodel;

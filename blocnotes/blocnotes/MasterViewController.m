@@ -119,7 +119,16 @@
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
     NSManagedObject *object = [self.fetchedResultsController objectAtIndexPath:indexPath];
-    cell.textLabel.text = [[object valueForKey:@"content"] description];
+    
+    if ([[object valueForKey:@"noteTitle"] description] == nil)
+    {
+        cell.textLabel.text = [[object valueForKey:@"content"] description];
+    }
+    
+    else
+    {
+        cell.textLabel.text = [[object valueForKey:@"noteTitle"] description];
+    }
 }
 
 #pragma mark - Fetched results controller
@@ -216,9 +225,10 @@
     [self.tableView endUpdates];
 }
 
-- (void)didUpdate:(DetailViewController *)sender withText:(NSString *)text isNew:(BOOL)newNote
+- (void)didUpdate:(DetailViewController *)sender withText:(NSString *)text andTitle:(NSString *)title isNew:(BOOL)newNote
 {
     NSString *textToSave = text;
+    NSString *titleToSave = title;
     BOOL isNewNote = newNote;
     
     NSManagedObjectContext *context = [self.fetchedResultsController managedObjectContext];
@@ -229,6 +239,7 @@
     {
         [newManagedObject setValue:[NSDate date] forKey:@"timeStamp"];
         [newManagedObject setValue:textToSave forKey:@"content"];
+        [newManagedObject setValue:titleToSave forKey:@"noteTitle"];
         
         // Save the context.
         NSError *error = nil;
@@ -245,6 +256,7 @@
     {
         [newManagedObject setValue:[NSDate date] forKey:@"timeStamp"];
         [newManagedObject setValue:textToSave forKey:@"content"];
+        [newManagedObject setValue:titleToSave forKey:@"noteTitle"];
         
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         [self tableView:self.tableView commitEditingStyle:UITableViewCellEditingStyleDelete forRowAtIndexPath:indexPath];
