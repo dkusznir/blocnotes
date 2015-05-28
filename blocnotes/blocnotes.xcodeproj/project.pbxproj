@@ -17,6 +17,8 @@
 		AA3DA5EC1B069D59001D7036 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = AA3DA5EA1B069D59001D7036 /* LaunchScreen.xib */; };
 		AA3DA5F81B069D5A001D7036 /* blocnotesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = AA3DA5F71B069D5A001D7036 /* blocnotesTests.m */; };
 		AA3DA6031B091F0E001D7036 /* CreateNoteViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AA3DA6021B091F0E001D7036 /* CreateNoteViewController.m */; };
+		AA8DCF191B177005003A6853 /* NoteDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AA8DCF181B177005003A6853 /* NoteDataManager.m */; };
+		AA8DCF1D1B177631003A6853 /* Body.m in Sources */ = {isa = PBXBuildFile; fileRef = AA8DCF1C1B177631003A6853 /* Body.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,10 @@
 		AA3DA6011B091F0E001D7036 /* CreateNoteViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CreateNoteViewController.h; sourceTree = "<group>"; };
 		AA3DA6021B091F0E001D7036 /* CreateNoteViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CreateNoteViewController.m; sourceTree = "<group>"; };
 		AA76FC471B0D046700D1CE03 /* blocnotes v2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "blocnotes v2.xcdatamodel"; sourceTree = "<group>"; };
+		AA8DCF171B177005003A6853 /* NoteDataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NoteDataManager.h; sourceTree = "<group>"; };
+		AA8DCF181B177005003A6853 /* NoteDataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NoteDataManager.m; sourceTree = "<group>"; };
+		AA8DCF1B1B177631003A6853 /* Body.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Body.h; sourceTree = "<group>"; };
+		AA8DCF1C1B177631003A6853 /* Body.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Body.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,7 +96,7 @@
 		AA3DA5D41B069D59001D7036 /* blocnotes */ = {
 			isa = PBXGroup;
 			children = (
-				AA3DA6051B091F40001D7036 /* View Objects */,
+				AA8DCF1A1B177011003A6853 /* Model Objects */,
 				AA3DA6041B091F25001D7036 /* ViewControllers */,
 				AA3DA5D91B069D59001D7036 /* AppDelegate.h */,
 				AA3DA5DA1B069D59001D7036 /* AppDelegate.m */,
@@ -142,11 +148,15 @@
 			name = ViewControllers;
 			sourceTree = "<group>";
 		};
-		AA3DA6051B091F40001D7036 /* View Objects */ = {
+		AA8DCF1A1B177011003A6853 /* Model Objects */ = {
 			isa = PBXGroup;
 			children = (
+				AA8DCF171B177005003A6853 /* NoteDataManager.h */,
+				AA8DCF181B177005003A6853 /* NoteDataManager.m */,
+				AA8DCF1B1B177631003A6853 /* Body.h */,
+				AA8DCF1C1B177631003A6853 /* Body.m */,
 			);
-			name = "View Objects";
+			name = "Model Objects";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -252,9 +262,11 @@
 				AA3DA5E41B069D59001D7036 /* DetailViewController.m in Sources */,
 				AA3DA5E11B069D59001D7036 /* MasterViewController.m in Sources */,
 				AA3DA5DB1B069D59001D7036 /* AppDelegate.m in Sources */,
+				AA8DCF191B177005003A6853 /* NoteDataManager.m in Sources */,
 				AA3DA5D81B069D59001D7036 /* main.m in Sources */,
 				AA3DA6031B091F0E001D7036 /* CreateNoteViewController.m in Sources */,
 				AA3DA5DE1B069D59001D7036 /* blocnotes.xcdatamodeld in Sources */,
+				AA8DCF1D1B177631003A6853 /* Body.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
