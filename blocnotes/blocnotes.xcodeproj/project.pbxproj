@@ -18,7 +18,6 @@
 		AA3DA5F81B069D5A001D7036 /* blocnotesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = AA3DA5F71B069D5A001D7036 /* blocnotesTests.m */; };
 		AA3DA6031B091F0E001D7036 /* CreateNoteViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AA3DA6021B091F0E001D7036 /* CreateNoteViewController.m */; };
 		AA8DCF191B177005003A6853 /* NoteDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AA8DCF181B177005003A6853 /* NoteDataManager.m */; };
-		AA8DCF1D1B177631003A6853 /* Body.m in Sources */ = {isa = PBXBuildFile; fileRef = AA8DCF1C1B177631003A6853 /* Body.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,8 +52,6 @@
 		AA76FC471B0D046700D1CE03 /* blocnotes v2.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "blocnotes v2.xcdatamodel"; sourceTree = "<group>"; };
 		AA8DCF171B177005003A6853 /* NoteDataManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NoteDataManager.h; sourceTree = "<group>"; };
 		AA8DCF181B177005003A6853 /* NoteDataManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NoteDataManager.m; sourceTree = "<group>"; };
-		AA8DCF1B1B177631003A6853 /* Body.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Body.h; sourceTree = "<group>"; };
-		AA8DCF1C1B177631003A6853 /* Body.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Body.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -153,8 +150,6 @@
 			children = (
 				AA8DCF171B177005003A6853 /* NoteDataManager.h */,
 				AA8DCF181B177005003A6853 /* NoteDataManager.m */,
-				AA8DCF1B1B177631003A6853 /* Body.h */,
-				AA8DCF1C1B177631003A6853 /* Body.m */,
 			);
 			name = "Model Objects";
 			sourceTree = "<group>";
@@ -266,7 +261,6 @@
 				AA3DA5D81B069D59001D7036 /* main.m in Sources */,
 				AA3DA6031B091F0E001D7036 /* CreateNoteViewController.m in Sources */,
 				AA3DA5DE1B069D59001D7036 /* blocnotes.xcdatamodeld in Sources */,
-				AA8DCF1D1B177631003A6853 /* Body.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

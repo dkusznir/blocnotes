@@ -18,7 +18,7 @@
 
 + (instancetype)sharedInstance;
 
-- (void)updateNoteWithTitle:(NSString *)title andBody:(NSString *)body;
-- (void)createNoteWithTitle:(NSString *)title andBody:(NSString *)body;
+- (NSURL *)applicationDocumentsDirectory;
+- (void)saveContext;
 
 @end
