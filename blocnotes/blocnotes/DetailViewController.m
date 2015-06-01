@@ -126,7 +126,20 @@ static NSString *titlePlaceholderText;
 {
     [self textViewDidEndEditing:self.textView];
     [self textFieldDidEndEditing:self.noteTitle];
-    [self.delegate didUpdate:self withText:self.text andTitle:self.noteTitleText isNew:NO];
+    
+    NSManagedObjectContext *saveData = [self.detailItem managedObjectContext];
+    
+    [self.detailItem setValue:[NSDate date] forKey:@"timeStamp"];
+    [self.detailItem setValue:self.textView.text forKey:@"content"];
+    [self.detailItem setValue:self.noteTitle.text forKey:@"noteTitle"];
+    
+    NSError *error;
+    [saveData save:&error];
+    if ( error )
+    {
+        NSLog(@"We failed to save our note changes. Error: %@", [error description]);
+    }
+    
     [self displaySavedButton];
     [self.shareButton setEnabled:YES];
 }
@@ -144,7 +157,7 @@ static NSString *titlePlaceholderText;
 
 - (void)didShare
 {
-    if (self.textView.text && self.noteTitle.text)
+    if (self.textView.text || self.noteTitle.text)
     {
         NSArray *itemsToShare = [[NSArray alloc] initWithObjects:self.textView.text, self.noteTitle.text, nil];
         
@@ -178,17 +191,26 @@ static NSString *titlePlaceholderText;
 {
     self.createdDateAndTime = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(self.textView.frame), self.view.bounds.size.width, 20)];
     NSDate *date = [self.detailItem valueForKey:@"timeStamp"];
-    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
-    [dateFormat setDateStyle:NSDateFormatterMediumStyle];
-    [dateFormat setTimeStyle:NSDateFormatterShortStyle];
-    NSString *dateToDisplay = [dateFormat stringFromDate:date];
-    self.createdDateAndTime.text = [NSString stringWithFormat:@"Created: %@", dateToDisplay];
-    self.createdDateAndTime.textColor = [UIColor whiteColor];
-    self.createdDateAndTime.textAlignment = NSTextAlignmentCenter;
-    self.createdDateAndTime.backgroundColor = [UIColor colorWithRed:0 green:0 blue:153.0 alpha:1];
-    [self.createdDateAndTime setFont:[UIFont fontWithName:@"HelveticaNeue" size:15]];
     
-    [self.view addSubview:self.createdDateAndTime];
+    if (date)
+    {
+        NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+        [dateFormat setDateStyle:NSDateFormatterMediumStyle];
+        [dateFormat setTimeStyle:NSDateFormatterShortStyle];
+        NSString *dateToDisplay = [dateFormat stringFromDate:date];
+        self.createdDateAndTime.text = [NSString stringWithFormat:@"Created: %@", dateToDisplay];
+        self.createdDateAndTime.textColor = [UIColor whiteColor];
+        self.createdDateAndTime.textAlignment = NSTextAlignmentCenter;
+        self.createdDateAndTime.backgroundColor = [UIColor colorWithRed:0 green:0 blue:153.0 alpha:1];
+        [self.createdDateAndTime setFont:[UIFont fontWithName:@"HelveticaNeue" size:15]];
+        
+        [self.view addSubview:self.createdDateAndTime];
+    }
+    
+    else
+    {
+        self.createdDateAndTime.hidden = YES;
+    }
 
 }
 
@@ -217,7 +239,7 @@ static NSString *titlePlaceholderText;
     
     self.navigationItem.rightBarButtonItems = navButtons;
     
-    if ([self.textView.text isEqualToString:@""] || [self.textView.text isEqualToString:placeholderText] || [self.noteTitle.text isEqualToString:@""] || [self.noteTitle.text isEqualToString:titlePlaceholderText])
+    if (([self.textView.text isEqualToString:@""] || [self.textView.text isEqualToString:placeholderText]) && ([self.noteTitle.text isEqualToString:@""] || [self.noteTitle.text isEqualToString:titlePlaceholderText]))
     {
         [self.shareButton setEnabled:NO];
         [self.saveButton setEnabled:NO];

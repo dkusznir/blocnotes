@@ -8,12 +8,10 @@
 
 #import "MasterViewController.h"
 #import "DetailViewController.h"
-#import "CreateNoteViewController.h"
 
 @interface MasterViewController ()
 
 @property (nonatomic, strong) NSString *text;
-@property (nonatomic, strong) CreateNoteViewController *createNoteVC;
 
 @end
 
@@ -38,7 +36,6 @@
     UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(insertNewObject:)];
     self.navigationItem.rightBarButtonItem = addButton;
     self.detailViewController = (DetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
-    
 }
 
 - (void)didReceiveMemoryWarning
@@ -49,11 +46,8 @@
 
 - (void)insertNewObject:(id)sender
 {
-    CreateNoteViewController *createVC = [[CreateNoteViewController alloc] init];
-    [createVC setDelegate:self];
-    
-    [self.navigationController pushViewController:createVC animated:YES];
-    
+    self.isNew = YES;
+    [self performSegueWithIdentifier:@"showDetail" sender:sender];
 }
 
 #pragma mark - Segues
@@ -62,14 +56,31 @@
 {
     if ([[segue identifier] isEqualToString:@"showDetail"])
     {
-        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        NSManagedObject *object = [[self fetchedResultsController] objectAtIndexPath:indexPath];
-        DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
-        [controller setDelegate:self];
-        [controller setDetailItem:object];
-        controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
-        controller.navigationItem.leftItemsSupplementBackButton = YES;
+        if (self.isNew == YES)
+        {
+            NSManagedObjectContext *context = [self.fetchedResultsController managedObjectContext];
+            NSEntityDescription *entity = [[self.fetchedResultsController fetchRequest] entity];
+            NSManagedObject *newManagedObject = [NSEntityDescription insertNewObjectForEntityForName:[entity name] inManagedObjectContext:context];
+            
+            DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
+            [controller setDetailItem:newManagedObject];
+            controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
+            controller.navigationItem.leftItemsSupplementBackButton = YES;
+        }
+        
+        else
+        {
+            NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+            NSManagedObject *object = [[self fetchedResultsController] objectAtIndexPath:indexPath];
+            DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
+            [controller setDetailItem:object];
+            controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
+            controller.navigationItem.leftItemsSupplementBackButton = YES;
+        }
+
     }
+    
+    self.isNew = NO;
 }
 
 #pragma mark - Table View
@@ -224,55 +235,6 @@
 {
     [self.tableView endUpdates];
 }
-
-- (void)didUpdate:(DetailViewController *)sender withText:(NSString *)text andTitle:(NSString *)title isNew:(BOOL)newNote
-{
-    NSString *textToSave = text;
-    NSString *titleToSave = title;
-    BOOL isNewNote = newNote;
-    
-    NSManagedObjectContext *context = [self.fetchedResultsController managedObjectContext];
-    NSEntityDescription *entity = [[self.fetchedResultsController fetchRequest] entity];
-    NSManagedObject *newManagedObject = [NSEntityDescription insertNewObjectForEntityForName:[entity name] inManagedObjectContext:context];
-    
-    if (isNewNote)
-    {
-        [newManagedObject setValue:[NSDate date] forKey:@"timeStamp"];
-        [newManagedObject setValue:textToSave forKey:@"content"];
-        [newManagedObject setValue:titleToSave forKey:@"noteTitle"];
-        
-        // Save the context.
-        NSError *error = nil;
-        if (![context save:&error])
-        {
-            // Replace this implementation with code to handle the error appropriately.
-            // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-            abort();
-        }
-    }
-    
-    else
-    {
-        [newManagedObject setValue:[NSDate date] forKey:@"timeStamp"];
-        [newManagedObject setValue:textToSave forKey:@"content"];
-        [newManagedObject setValue:titleToSave forKey:@"noteTitle"];
-        
-        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        [self tableView:self.tableView commitEditingStyle:UITableViewCellEditingStyleDelete forRowAtIndexPath:indexPath];
-        
-        NSError *error = nil;
-        if (![context save:&error])
-        {
-            // Replace this implementation with code to handle the error appropriately.
-            // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-            abort();
-        }
-    }
-
-}
-
 
 /*
 // Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed. 

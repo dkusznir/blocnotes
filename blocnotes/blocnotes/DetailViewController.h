@@ -7,18 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
-
-@class DetailViewController;
-
-@protocol DetailViewControllerDelegate <NSObject>
-
-- (void)didUpdate:(DetailViewController *)sender withText:(NSString *)text andTitle:(NSString *)title isNew:(BOOL)newNote;
-
-@end
+#import <CoreData/CoreData.h>
 
 @interface DetailViewController : UIViewController <UITextViewDelegate, UIAlertViewDelegate, UITextFieldDelegate>
 
-@property (nonatomic, weak) NSObject <DetailViewControllerDelegate> *delegate;
 @property (strong, nonatomic) id detailItem;
 @property (nonatomic, strong) NSString *text;
 @property (nonatomic, strong) UITextView *textView;
