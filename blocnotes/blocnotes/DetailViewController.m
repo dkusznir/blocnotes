@@ -130,8 +130,8 @@ static NSString *titlePlaceholderText;
     NSManagedObjectContext *saveData = [self.detailItem managedObjectContext];
     
     [self.detailItem setValue:[NSDate date] forKey:@"timeStamp"];
-    [self.detailItem setValue:self.textView.text forKey:@"content"];
     [self.detailItem setValue:self.noteTitle.text forKey:@"noteTitle"];
+    [self.detailItem setValue:self.textView.text forKey:@"content"];
     
     NSError *error;
     [saveData save:&error];
