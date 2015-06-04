@@ -41,6 +41,8 @@
     }
     
     [self.extensionContext completeRequestReturningItems:@[] completionHandler:nil];
+    
+    [[NoteDataManager sharedInstance] deleteCache];
 
 }
 

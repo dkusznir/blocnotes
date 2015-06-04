@@ -20,5 +20,6 @@
 
 - (NSURL *)applicationDocumentsDirectory;
 - (void)saveContext;
+- (void)deleteCache;
 
 @end

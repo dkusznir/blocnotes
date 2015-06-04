@@ -154,5 +154,9 @@
     }
 }
 
+- (void)deleteCache
+{
+    [NSFetchedResultsController deleteCacheWithName:@"Master"];
+}
 
 @end
