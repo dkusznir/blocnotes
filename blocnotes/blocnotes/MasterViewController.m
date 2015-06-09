@@ -79,7 +79,7 @@
             NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
             NSManagedObject *object = nil;
             
-            if (self.searchController.isActive)
+            if (self.searchController.active)
             {
                 object = [self.filteredList objectAtIndex:indexPath.row];
             }

@@ -8,7 +8,7 @@
 
 #import "DetailViewController.h"
 
-@interface DetailViewController ()
+@interface DetailViewController () <UITextViewDelegate, UIAlertViewDelegate, UITextFieldDelegate, UIGestureRecognizerDelegate>
 
 @end
 
@@ -59,6 +59,7 @@ static NSString *titlePlaceholderText;
     [self setUpNavButtons];
     [self setUpCreatedLabel];
     [self setUpAnimatedSavedLabel];
+
 }
 
 - (void)textViewDidBeginEditing:(UITextView *)textView
@@ -69,8 +70,11 @@ static NSString *titlePlaceholderText;
         self.textView.textColor = [UIColor blackColor];
     }
     
-    [self.saveButton setEnabled:YES];
+    [self.textView becomeFirstResponder];
+    self.textView.editable = YES;
 
+    [self.saveButton setEnabled:YES];
+    
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView
@@ -86,6 +90,10 @@ static NSString *titlePlaceholderText;
     {
         [self setText:self.textView.text];
     }
+    
+    self.textView.editable = NO;
+    self.textView.dataDetectorTypes = UIDataDetectorTypeAll;
+    [self.textView resignFirstResponder];
 
 }
 
@@ -114,6 +122,8 @@ static NSString *titlePlaceholderText;
         self.noteTitleText = self.noteTitle.text;
     }
     
+    [self.noteTitle resignFirstResponder];
+    
 }
 
 - (void)didReceiveMemoryWarning
@@ -126,6 +136,16 @@ static NSString *titlePlaceholderText;
 {
     [self textViewDidEndEditing:self.textView];
     [self textFieldDidEndEditing:self.noteTitle];
+    
+    if (self.textView.text == placeholderText)
+    {
+        self.textView.text = @"";
+    }
+    
+    if (self.noteTitle.placeholder == titlePlaceholderText)
+    {
+        self.noteTitle.text = @"";
+    }
     
     NSManagedObjectContext *saveData = [self.detailItem managedObjectContext];
     
@@ -182,7 +202,23 @@ static NSString *titlePlaceholderText;
         self.textView.text = placeholderText;
         self.textView.textColor = [UIColor lightGrayColor];
     }
+    
+    if ([self.textView.text isEqualToString:placeholderText])
+    {
+        self.textView.textColor = [UIColor lightGrayColor];
+    }
+    
+    
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(viewTapped:)];
+    tap.numberOfTapsRequired = 1;
+    tap.numberOfTouchesRequired = 1;
+    tap.delegate = self;
+    [self.textView addGestureRecognizer:tap];
+    
 
+    self.textView.editable = NO;
+    self.textView.dataDetectorTypes = UIDataDetectorTypeAll;
+    
     [self.view addSubview:self.textView];
 
 }
@@ -274,6 +310,19 @@ static NSString *titlePlaceholderText;
     
     [self.view addSubview:self.noteTitle];
                                                                    
+}
+
+
+- (void)viewTapped:(UITapGestureRecognizer *)recognizer
+{
+    
+    if (recognizer.state == UIGestureRecognizerStateRecognized)
+    {
+        self.textView.editable = YES;
+        self.textView.dataDetectorTypes = UIDataDetectorTypeNone;
+        [self textViewDidBeginEditing:self.textView];
+    }
+    
 }
 
 @end

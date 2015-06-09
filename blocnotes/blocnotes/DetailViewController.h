@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import <CoreData/CoreData.h>
 
-@interface DetailViewController : UIViewController <UITextViewDelegate, UIAlertViewDelegate, UITextFieldDelegate>
+@interface DetailViewController : UIViewController 
 
 @property (strong, nonatomic) id detailItem;
 @property (nonatomic, strong) NSString *text;
