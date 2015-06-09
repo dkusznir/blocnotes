@@ -8,7 +8,7 @@
 
 #import "DetailViewController.h"
 
-@interface DetailViewController ()
+@interface DetailViewController () <UITextViewDelegate, UIAlertViewDelegate, UITextFieldDelegate, UIGestureRecognizerDelegate>
 
 @end
 
@@ -59,6 +59,7 @@ static NSString *titlePlaceholderText;
     [self setUpNavButtons];
     [self setUpCreatedLabel];
     [self setUpAnimatedSavedLabel];
+
 }
 
 - (void)textViewDidBeginEditing:(UITextView *)textView
@@ -69,8 +70,11 @@ static NSString *titlePlaceholderText;
         self.textView.textColor = [UIColor blackColor];
     }
     
-    [self.saveButton setEnabled:YES];
+    [self.textView becomeFirstResponder];
+    self.textView.editable = YES;
 
+    [self.saveButton setEnabled:YES];
+    
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView
@@ -86,6 +90,10 @@ static NSString *titlePlaceholderText;
     {
         [self setText:self.textView.text];
     }
+    
+    self.textView.editable = NO;
+    self.textView.dataDetectorTypes = UIDataDetectorTypeAll;
+    [self.textView resignFirstResponder];
 
 }
 
@@ -114,6 +122,8 @@ static NSString *titlePlaceholderText;
         self.noteTitleText = self.noteTitle.text;
     }
     
+    [self.noteTitle resignFirstResponder];
+    
 }
 
 - (void)didReceiveMemoryWarning
@@ -126,7 +136,30 @@ static NSString *titlePlaceholderText;
 {
     [self textViewDidEndEditing:self.textView];
     [self textFieldDidEndEditing:self.noteTitle];
-    [self.delegate didUpdate:self withText:self.text andTitle:self.noteTitleText isNew:NO];
+    
+    if (self.textView.text == placeholderText)
+    {
+        self.textView.text = @"";
+    }
+    
+    if (self.noteTitle.placeholder == titlePlaceholderText)
+    {
+        self.noteTitle.text = @"";
+    }
+    
+    NSManagedObjectContext *saveData = [self.detailItem managedObjectContext];
+    
+    [self.detailItem setValue:[NSDate date] forKey:@"timeStamp"];
+    [self.detailItem setValue:self.noteTitle.text forKey:@"noteTitle"];
+    [self.detailItem setValue:self.textView.text forKey:@"content"];
+    
+    NSError *error;
+    [saveData save:&error];
+    if ( error )
+    {
+        NSLog(@"We failed to save our note changes. Error: %@", [error description]);
+    }
+    
     [self displaySavedButton];
     [self.shareButton setEnabled:YES];
 }
@@ -144,7 +177,7 @@ static NSString *titlePlaceholderText;
 
 - (void)didShare
 {
-    if (self.textView.text && self.noteTitle.text)
+    if (self.textView.text || self.noteTitle.text)
     {
         NSArray *itemsToShare = [[NSArray alloc] initWithObjects:self.textView.text, self.noteTitle.text, nil];
         
@@ -169,7 +202,23 @@ static NSString *titlePlaceholderText;
         self.textView.text = placeholderText;
         self.textView.textColor = [UIColor lightGrayColor];
     }
+    
+    if ([self.textView.text isEqualToString:placeholderText])
+    {
+        self.textView.textColor = [UIColor lightGrayColor];
+    }
+    
+    
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(viewTapped:)];
+    tap.numberOfTapsRequired = 1;
+    tap.numberOfTouchesRequired = 1;
+    tap.delegate = self;
+    [self.textView addGestureRecognizer:tap];
+    
 
+    self.textView.editable = NO;
+    self.textView.dataDetectorTypes = UIDataDetectorTypeAll;
+    
     [self.view addSubview:self.textView];
 
 }
@@ -178,17 +227,26 @@ static NSString *titlePlaceholderText;
 {
     self.createdDateAndTime = [[UILabel alloc] initWithFrame:CGRectMake(0, CGRectGetMaxY(self.textView.frame), self.view.bounds.size.width, 20)];
     NSDate *date = [self.detailItem valueForKey:@"timeStamp"];
-    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
-    [dateFormat setDateStyle:NSDateFormatterMediumStyle];
-    [dateFormat setTimeStyle:NSDateFormatterShortStyle];
-    NSString *dateToDisplay = [dateFormat stringFromDate:date];
-    self.createdDateAndTime.text = [NSString stringWithFormat:@"Created: %@", dateToDisplay];
-    self.createdDateAndTime.textColor = [UIColor whiteColor];
-    self.createdDateAndTime.textAlignment = NSTextAlignmentCenter;
-    self.createdDateAndTime.backgroundColor = [UIColor colorWithRed:0 green:0 blue:153.0 alpha:1];
-    [self.createdDateAndTime setFont:[UIFont fontWithName:@"HelveticaNeue" size:15]];
     
-    [self.view addSubview:self.createdDateAndTime];
+    if (date)
+    {
+        NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+        [dateFormat setDateStyle:NSDateFormatterMediumStyle];
+        [dateFormat setTimeStyle:NSDateFormatterShortStyle];
+        NSString *dateToDisplay = [dateFormat stringFromDate:date];
+        self.createdDateAndTime.text = [NSString stringWithFormat:@"Created: %@", dateToDisplay];
+        self.createdDateAndTime.textColor = [UIColor whiteColor];
+        self.createdDateAndTime.textAlignment = NSTextAlignmentCenter;
+        self.createdDateAndTime.backgroundColor = [UIColor colorWithRed:0 green:0 blue:153.0 alpha:1];
+        [self.createdDateAndTime setFont:[UIFont fontWithName:@"HelveticaNeue" size:15]];
+        
+        [self.view addSubview:self.createdDateAndTime];
+    }
+    
+    else
+    {
+        self.createdDateAndTime.hidden = YES;
+    }
 
 }
 
@@ -217,7 +275,7 @@ static NSString *titlePlaceholderText;
     
     self.navigationItem.rightBarButtonItems = navButtons;
     
-    if ([self.textView.text isEqualToString:@""] || [self.textView.text isEqualToString:placeholderText] || [self.noteTitle.text isEqualToString:@""] || [self.noteTitle.text isEqualToString:titlePlaceholderText])
+    if (([self.textView.text isEqualToString:@""] || [self.textView.text isEqualToString:placeholderText]) && ([self.noteTitle.text isEqualToString:@""] || [self.noteTitle.text isEqualToString:titlePlaceholderText]))
     {
         [self.shareButton setEnabled:NO];
         [self.saveButton setEnabled:NO];
@@ -252,6 +310,19 @@ static NSString *titlePlaceholderText;
     
     [self.view addSubview:self.noteTitle];
                                                                    
+}
+
+
+- (void)viewTapped:(UITapGestureRecognizer *)recognizer
+{
+    
+    if (recognizer.state == UIGestureRecognizerStateRecognized)
+    {
+        self.textView.editable = YES;
+        self.textView.dataDetectorTypes = UIDataDetectorTypeNone;
+        [self textViewDidBeginEditing:self.textView];
+    }
+    
 }
 
 @end

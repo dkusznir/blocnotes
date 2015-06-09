@@ -8,12 +8,15 @@
 
 #import "MasterViewController.h"
 #import "DetailViewController.h"
-#import "CreateNoteViewController.h"
+#import "NoteDataManager.h"
 
-@interface MasterViewController ()
+@interface MasterViewController () <UISearchControllerDelegate, UISearchBarDelegate, UISearchResultsUpdating>
 
 @property (nonatomic, strong) NSString *text;
-@property (nonatomic, strong) CreateNoteViewController *createNoteVC;
+@property (nonatomic, assign) BOOL isNew;
+@property (nonatomic, strong) UISearchController *searchController;
+@property (nonatomic, strong) NSArray *filteredList;
+@property (nonatomic, strong) NSFetchRequest *searchFetchRequest;
 
 @end
 
@@ -38,7 +41,7 @@
     UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(insertNewObject:)];
     self.navigationItem.rightBarButtonItem = addButton;
     self.detailViewController = (DetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
-    
+    [self setUpSearchController];
 }
 
 - (void)didReceiveMemoryWarning
@@ -49,11 +52,8 @@
 
 - (void)insertNewObject:(id)sender
 {
-    CreateNoteViewController *createVC = [[CreateNoteViewController alloc] init];
-    [createVC setDelegate:self];
-    
-    [self.navigationController pushViewController:createVC animated:YES];
-    
+    self.isNew = YES;
+    [self performSegueWithIdentifier:@"showDetail" sender:sender];
 }
 
 #pragma mark - Segues
@@ -62,14 +62,45 @@
 {
     if ([[segue identifier] isEqualToString:@"showDetail"])
     {
-        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        NSManagedObject *object = [[self fetchedResultsController] objectAtIndexPath:indexPath];
-        DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
-        [controller setDelegate:self];
-        [controller setDetailItem:object];
-        controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
-        controller.navigationItem.leftItemsSupplementBackButton = YES;
+        if (self.isNew == YES)
+        {
+            NSManagedObjectContext *context = [self.fetchedResultsController managedObjectContext];
+            NSEntityDescription *entity = [[self.fetchedResultsController fetchRequest] entity];
+            NSManagedObject *newManagedObject = [NSEntityDescription insertNewObjectForEntityForName:[entity name] inManagedObjectContext:context];
+            
+            DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
+            [controller setDetailItem:newManagedObject];
+            controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
+            controller.navigationItem.leftItemsSupplementBackButton = YES;
+        }
+        
+        else
+        {
+            NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
+            NSManagedObject *object = nil;
+            
+            if (self.searchController.active)
+            {
+                object = [self.filteredList objectAtIndex:indexPath.row];
+            }
+            
+            else
+            {
+                object = [[self fetchedResultsController] objectAtIndexPath:indexPath];
+            }
+            
+            DetailViewController *controller = (DetailViewController *)[[segue destinationViewController] topViewController];
+            [controller setDetailItem:object];
+            controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
+            controller.navigationItem.leftItemsSupplementBackButton = YES;
+            [self.searchController dismissViewControllerAnimated:YES completion:nil];
+            self.searchController.searchBar.text = @"";
+            [self.tableView reloadData];
+        }
+
     }
+    
+    self.isNew = NO;
 }
 
 #pragma mark - Table View
@@ -77,18 +108,30 @@
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     return [[self.fetchedResultsController sections] count];
+
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    id <NSFetchedResultsSectionInfo> sectionInfo = [self.fetchedResultsController sections][section];
-    return [sectionInfo numberOfObjects];
+    if (self.searchController.active)
+    {
+        return [self.filteredList count];
+    }
+    
+    else
+    {
+        id <NSFetchedResultsSectionInfo> sectionInfo = [self.fetchedResultsController sections][section];
+        return [sectionInfo numberOfObjects];
+    }
+
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
+    
     [self configureCell:cell atIndexPath:indexPath];
+    
     return cell;
 }
 
@@ -118,7 +161,17 @@
 
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
-    NSManagedObject *object = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    NSManagedObject *object = nil;
+    
+    if (self.searchController.active)
+    {
+        object = [self.filteredList objectAtIndex:indexPath.row];
+    }
+    
+    else
+    {
+        object = [self.fetchedResultsController objectAtIndexPath:indexPath];
+    }
     
     if ([[object valueForKey:@"noteTitle"] description] == nil)
     {
@@ -156,7 +209,10 @@
     
     // Edit the section name key path and cache name if appropriate.
     // nil for section name key path means "no sections".
-    NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil cacheName:@"Master"];
+    NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
+                                                                                                managedObjectContext:self.managedObjectContext
+                                                                                                  sectionNameKeyPath:nil
+                                                                                                           cacheName:@"Master"];
     aFetchedResultsController.delegate = self;
     self.fetchedResultsController = aFetchedResultsController;
     
@@ -225,54 +281,100 @@
     [self.tableView endUpdates];
 }
 
-- (void)didUpdate:(DetailViewController *)sender withText:(NSString *)text andTitle:(NSString *)title isNew:(BOOL)newNote
-{
-    NSString *textToSave = text;
-    NSString *titleToSave = title;
-    BOOL isNewNote = newNote;
-    
-    NSManagedObjectContext *context = [self.fetchedResultsController managedObjectContext];
-    NSEntityDescription *entity = [[self.fetchedResultsController fetchRequest] entity];
-    NSManagedObject *newManagedObject = [NSEntityDescription insertNewObjectForEntityForName:[entity name] inManagedObjectContext:context];
-    
-    if (isNewNote)
-    {
-        [newManagedObject setValue:[NSDate date] forKey:@"timeStamp"];
-        [newManagedObject setValue:textToSave forKey:@"content"];
-        [newManagedObject setValue:titleToSave forKey:@"noteTitle"];
-        
-        // Save the context.
-        NSError *error = nil;
-        if (![context save:&error])
-        {
-            // Replace this implementation with code to handle the error appropriately.
-            // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-            abort();
-        }
-    }
-    
-    else
-    {
-        [newManagedObject setValue:[NSDate date] forKey:@"timeStamp"];
-        [newManagedObject setValue:textToSave forKey:@"content"];
-        [newManagedObject setValue:titleToSave forKey:@"noteTitle"];
-        
-        NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
-        [self tableView:self.tableView commitEditingStyle:UITableViewCellEditingStyleDelete forRowAtIndexPath:indexPath];
-        
-        NSError *error = nil;
-        if (![context save:&error])
-        {
-            // Replace this implementation with code to handle the error appropriately.
-            // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-            NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-            abort();
-        }
-    }
+#pragma mark - Set Up Search Controller
 
+- (void)setUpSearchController
+{
+    self.searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
+    self.searchController.delegate = self;
+    self.searchController.dimsBackgroundDuringPresentation = NO;
+    
+    self.searchController.searchBar.delegate = self;
+    [self.searchController.searchBar sizeToFit];
+    self.tableView.tableHeaderView = self.searchController.searchBar;
 }
 
+- (NSFetchRequest *)searchFetchRequest
+{
+    if (_searchFetchRequest != nil)
+    {
+        return _searchFetchRequest;
+    }
+    
+    _searchFetchRequest = [[NSFetchRequest alloc] init];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Body" inManagedObjectContext:self.managedObjectContext];
+    [_searchFetchRequest setEntity:entity];
+    
+    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"noteTitle" ascending:NO selector:@selector(caseInsensitiveCompare:)];
+    NSArray *sortDescriptors = @[sortDescriptor];
+    [_searchFetchRequest setSortDescriptors:sortDescriptors];
+    return _searchFetchRequest;
+    
+}
+
+- (void)searchForText:(NSString *)searchText
+{
+    if (self.managedObjectContext)
+    {
+        NSString *predicateFormat = @"(%K CONTAINS[cd] %@) OR (%K CONTAINS[cd] %@)";
+
+        NSString *searchAttributeTitle = @"noteTitle";
+        NSString *searchAttributeContent = @"content";
+        
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateFormat, searchAttributeTitle, searchText, searchAttributeContent, searchText];
+        
+        [self.searchFetchRequest setPredicate:predicate];
+        
+        NSError *error;
+        self.filteredList = [self.managedObjectContext executeFetchRequest:self.searchFetchRequest error:&error];
+        
+        if (searchText.length == 0)
+        {
+            [self.searchFetchRequest setPredicate:nil];
+            self.filteredList = [self.managedObjectContext executeFetchRequest:self.searchFetchRequest error:&error];
+            
+        }
+        
+        if (error)
+        {
+            NSLog(@"searchFetchRequest failed: %@", [error localizedDescription]);
+        }
+    }
+}
+
+- (void)updateSearchResultsForSearchController:(UISearchController *)searchController
+{
+    NSString *searchString = searchController.searchBar.text;
+    [self searchForText:searchString];
+    [self.tableView reloadData];
+}
+
+- (void)searchBar:(UISearchBar *)searchBar textDidChange:(NSString *)searchText
+{
+    [self updateSearchResultsForSearchController:self.searchController];
+    
+}
+
+- (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar
+{
+    self.searchController.active = NO;
+    
+    [self reloadAllData];
+}
+
+- (void)reloadAllData
+{
+    self.fetchedResultsController = nil;
+
+    NSError *error;
+    [self.fetchedResultsController performFetch:&error];
+    [self.tableView reloadData];
+    
+    if (error)
+    {
+        NSLog(@"searchFetchRequest failed: %@", [error localizedDescription]);
+    }
+}
 
 /*
 // Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed. 
