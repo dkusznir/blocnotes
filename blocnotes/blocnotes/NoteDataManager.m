@@ -114,6 +114,8 @@
                              [NSNumber numberWithBool:YES], NSMigratePersistentStoresAutomaticallyOption,
                              [NSNumber numberWithBool:YES], NSInferMappingModelAutomaticallyOption,
                              nil];
+    
+    NSLog(@"IS ICLOUD EQUAL TO YES: %hhd", [[NSUserDefaults standardUserDefaults] boolForKey:@"iCloudSetting"]);
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"iCloudSetting"] == YES)
     {
         NSMutableDictionary *addiCloud = [NSMutableDictionary dictionaryWithDictionary:options];

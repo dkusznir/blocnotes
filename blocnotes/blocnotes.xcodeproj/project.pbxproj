@@ -21,8 +21,8 @@
 		AAF3FF3A1B1D085A0046AF77 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AAF3FF391B1D085A0046AF77 /* MainInterface.storyboard */; };
 		AAF3FF3D1B1D085A0046AF77 /* blocnotesShare.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AAF3FF321B1D085A0046AF77 /* blocnotesShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AAF3FF441B1D19900046AF77 /* blocnotes.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = AA3DA5DC1B069D59001D7036 /* blocnotes.xcdatamodeld */; };
-		AAF3FF481B1F4B910046AF77 /* NoteDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AA8DCF181B177005003A6853 /* NoteDataManager.m */; };
 		AAF3FF491B1F59EB0046AF77 /* ShareViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AAF3FF371B1D085A0046AF77 /* ShareViewController.m */; };
+		AAFC41431B45E26100314944 /* NoteDataManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AA8DCF181B177005003A6853 /* NoteDataManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -384,9 +384,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AAF3FF481B1F4B910046AF77 /* NoteDataManager.m in Sources */,
 				AAF3FF381B1D085A0046AF77 /* ShareViewController.m in Sources */,
 				AAF3FF441B1D19900046AF77 /* blocnotes.xcdatamodeld in Sources */,
+				AAFC41431B45E26100314944 /* NoteDataManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
