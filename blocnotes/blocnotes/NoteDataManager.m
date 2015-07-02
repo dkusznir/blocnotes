@@ -12,6 +12,7 @@
 
 @property (strong, nonatomic) NSManagedObjectContext *managedObjectContext;
 @property (strong, nonatomic) NSManagedObjectModel *managedObjectModel;
+@property (strong, nonatomic) id currentiCloudToken;
 
 @end
 
@@ -74,12 +75,14 @@
 @synthesize managedObjectModel = _managedObjectModel;
 @synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
 
-- (NSURL *)applicationDocumentsDirectory {
+- (NSURL *)applicationDocumentsDirectory
+{
     // The directory the application uses to store the Core Data store file. This code uses a directory named "com.dkusznir.blocnotes" in the application's documents directory.
     return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 }
 
-- (NSManagedObjectModel *)managedObjectModel {
+- (NSManagedObjectModel *)managedObjectModel
+{
     // The managed object model for the application. It is a fatal error for the application not to be able to find and load its model.
     if (_managedObjectModel != nil) {
         return _managedObjectModel;
@@ -89,25 +92,43 @@
     return _managedObjectModel;
 }
 
-- (NSPersistentStoreCoordinator *)persistentStoreCoordinator {
+- (NSPersistentStoreCoordinator *)persistentStoreCoordinator
+{
     // The persistent store coordinator for the application. This implementation creates and return a coordinator, having added the store for the application to it.
-    if (_persistentStoreCoordinator != nil) {
+    if (_persistentStoreCoordinator != nil)
+    {
         return _persistentStoreCoordinator;
     }
     
     // Create the coordinator and store
-    
     _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
+    //NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"blocnotes.sqlite"];
+    _persistentStoreCoordinator = [self setPersistentStore];
+    
+    return _persistentStoreCoordinator;
+}
+
+- (NSPersistentStoreCoordinator *)setPersistentStore
+{
     NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
                              [NSNumber numberWithBool:YES], NSMigratePersistentStoresAutomaticallyOption,
                              [NSNumber numberWithBool:YES], NSInferMappingModelAutomaticallyOption,
                              nil];
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"iCloudSetting"] == YES)
+    {
+        NSMutableDictionary *addiCloud = [NSMutableDictionary dictionaryWithDictionary:options];
+        [addiCloud setObject:[NSString stringWithFormat:@"MyAppCloudStore"] forKey:NSPersistentStoreUbiquitousContentNameKey];
+        options = addiCloud;
+    }
+    
+    _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
     //NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"blocnotes.sqlite"];
     NSURL *storeURL = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:@"group.dkusznir.blocnotes"];
     storeURL = [storeURL URLByAppendingPathComponent:@"blocnotes.sqlite"];
     NSError *error = nil;
     NSString *failureReason = @"There was an error creating or loading the application's saved data.";
-    if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error]) {
+    if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:&error])
+    {
         // Report any error we got.
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
         dict[NSLocalizedDescriptionKey] = @"Failed to initialize the application's saved data";
@@ -120,37 +141,50 @@
         abort();
     }
     
+    NSLog(@"PS: %@", _persistentStoreCoordinator);
     return _persistentStoreCoordinator;
+
 }
 
-
-- (NSManagedObjectContext *)managedObjectContext {
+- (NSManagedObjectContext *)managedObjectContext
+{
     // Returns the managed object context for the application (which is already bound to the persistent store coordinator for the application.)
     if (_managedObjectContext != nil) {
         return _managedObjectContext;
     }
     
     NSPersistentStoreCoordinator *coordinator = [self persistentStoreCoordinator];
-    if (!coordinator) {
+    if (!coordinator)
+    {
         return nil;
     }
-    _managedObjectContext = [[NSManagedObjectContext alloc] init];
-    [_managedObjectContext setPersistentStoreCoordinator:coordinator];
+    
+    else
+    {
+        _managedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+        [_managedObjectContext setPersistentStoreCoordinator:coordinator];
+        [self observeCloudActions:coordinator];
+    }
+
     return _managedObjectContext;
 }
 
 #pragma mark - Core Data Saving support
 
-- (void)saveContext {
+- (void)saveContext
+{
     NSManagedObjectContext *managedObjectContext = self.managedObjectContext;
-    if (managedObjectContext != nil) {
+    if (managedObjectContext != nil)
+    {
         NSError *error = nil;
-        if ([managedObjectContext hasChanges] && ![managedObjectContext save:&error]) {
+        if ([managedObjectContext hasChanges] && ![managedObjectContext save:&error])
+        {
             // Replace this implementation with code to handle the error appropriately.
             // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
             NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
             abort();
         }
+
     }
 }
 
@@ -159,4 +193,145 @@
     [NSFetchedResultsController deleteCacheWithName:@"Master"];
 }
 
+#pragma mark - iCloud Core Data Notification Methods
+
+- (void)observeCloudActions:(NSPersistentStoreCoordinator *)coordinator
+{
+    NSNotificationCenter *notifications = [NSNotificationCenter defaultCenter];
+    
+    [notifications addObserver:self
+                      selector:@selector(storesDidChange:)
+                          name:NSPersistentStoreCoordinatorStoresDidChangeNotification
+                        object:coordinator];
+    
+    [notifications addObserver:self
+                      selector:@selector(storesWillChange:)
+                          name:NSPersistentStoreCoordinatorStoresWillChangeNotification
+                        object:coordinator];
+    
+    [notifications addObserver:self
+                      selector:@selector(storesDidImportContent:)
+                          name:NSPersistentStoreDidImportUbiquitousContentChangesNotification
+                        object:coordinator];
+}
+
+- (void)storesWillChange:(NSNotification *)notification
+{
+    NSManagedObjectContext *context = self.managedObjectContext;
+    
+    [context performBlockAndWait:^{
+        if ([context hasChanges])
+        {
+            [self saveContext];
+        }
+        
+        [context reset];
+    }];
+    
+    self.iCloudConnectivityDidChange = YES;
+    
+}
+
+- (void)storesDidChange:(NSNotification *)notification
+{
+    NSError *error = nil;
+    if (![self.fetchedResultsController performFetch:&error])
+    {
+        NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
+    }
+    
+    self.iCloudConnectivityDidChange = YES;
+    
+}
+
+- (void)storesDidImportContent:(NSNotification *)notification
+{
+    NSManagedObjectContext *context = self.managedObjectContext;
+    
+    [context performBlock:^{
+        NSLog(@"Importing content");
+        
+        [context mergeChangesFromContextDidSaveNotification:notification];
+    }];
+    
+    self.iCloudConnectivityDidChange = NO;
+}
+
+/*
+- (void)setUpiCloud
+{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    self.currentiCloudToken = fileManager.ubiquityIdentityToken;
+    
+    NSLog(@"iCloud Token: %@", self.currentiCloudToken);
+    
+    if (self.currentiCloudToken)
+    {
+        NSData *newTokenData = [NSKeyedArchiver archivedDataWithRootObject:self.currentiCloudToken];
+        [[NSUserDefaults standardUserDefaults] setObject:newTokenData forKey:@"com.apple.blocnotes.UbiquityIdentityToken"];
+    }
+    
+    else
+    {
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"com.apple.blocnotes.UbiquityIdentityToken"];
+    }
+    
+    [[NSNotificationCenter defaultCenter]
+     addObserver:self
+     selector:@selector(iCloudAccountAvailabilityChanged:)
+     name:NSUbiquityIdentityDidChangeNotification
+     object:nil];
+    
+    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunchedOnce"])
+    {
+        NSLog(@"Existing user");
+    }
+    
+    else
+    {
+        if (self.currentiCloudToken)
+        {
+            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasLaunchedOnce"];
+            
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Choose Storage Option", @"Storage Option Title") message:NSLocalizedString(@"Should notes be stored in iCloud and available on all of your devices?", @"Storage Option Message") preferredStyle:UIAlertControllerStyleActionSheet];
+            UIAlertAction *iCloudEnabled = [UIAlertAction actionWithTitle:NSLocalizedString(@"Yes", @"Yes Option") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                NSLog(@"YES CLICKED");
+                self.isiCloudEnabled = YES;
+            }];
+            UIAlertAction *iCloudDisabled = [UIAlertAction actionWithTitle:NSLocalizedString(@"No", @"No Option") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+                NSLog(@"NO CLICKED");
+                self.isiCloudEnabled = NO;
+            }];
+            [alert addAction:iCloudEnabled];
+            [alert addAction:iCloudDisabled];
+            
+        }
+    }
+}
+
+- (void)iCloudAccountAvailabilityChanged:(NSNotification *)notification
+{
+    NSLog(@"iCloud Account Availability Changed. Token: %@", self.currentiCloudToken);
+ 
+     NSFileManager *fileManager = [NSFileManager defaultManager];
+     id newiCloudToken = fileManager.ubiquityIdentityToken;
+     
+     if (newiCloudToken != self.currentiCloudToken)
+     {
+     NSLog(@"New iCloud Token: %@", self.currentiCloudToken);
+     self.currentiCloudToken = newiCloudToken;
+     [[NoteDataManager sharedInstance] deleteCache];
+     //Discard changes
+     //Empty iCloud-related data caches
+     //Refresh all iCloud-related user interface elements
+     }
+     
+     else
+     {
+     //Store content in app's local data container
+     //When account is available, move new content to iCloud (backend thread)
+     }
+ 
+}
+*/
 @end
