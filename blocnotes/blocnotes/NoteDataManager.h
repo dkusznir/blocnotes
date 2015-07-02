@@ -8,8 +8,6 @@
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
-#import <UIKit/UIKit.h>
-#import "AppDelegate.h"
 
 @interface NoteDataManager : NSObject <NSFetchedResultsControllerDelegate>
 
