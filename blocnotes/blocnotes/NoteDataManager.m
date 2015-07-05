@@ -115,7 +115,6 @@
                              [NSNumber numberWithBool:YES], NSInferMappingModelAutomaticallyOption,
                              nil];
     
-    NSLog(@"IS ICLOUD EQUAL TO YES: %hhd", [[NSUserDefaults standardUserDefaults] boolForKey:@"iCloudSetting"]);
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"iCloudSetting"] == YES)
     {
         NSMutableDictionary *addiCloud = [NSMutableDictionary dictionaryWithDictionary:options];
@@ -124,7 +123,6 @@
     }
     
     _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
-    //NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"blocnotes.sqlite"];
     NSURL *storeURL = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:@"group.dkusznir.blocnotes"];
     storeURL = [storeURL URLByAppendingPathComponent:@"blocnotes.sqlite"];
     NSError *error = nil;
@@ -195,6 +193,27 @@
     [NSFetchedResultsController deleteCacheWithName:@"Master"];
 }
 
+- (NSArray *)getNotes
+{
+    NSArray *noteTitles = [NSArray array];
+    
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Body" inManagedObjectContext:self.managedObjectContext];
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    
+    [request setEntity:entity];
+    [request setResultType:NSDictionaryResultType];
+    
+    NSError *error;
+    noteTitles = [self.managedObjectContext executeFetchRequest:request error:&error];
+    
+    for (int i = 0; i < noteTitles.count; i++)
+    {
+        NSLog(@"%@", noteTitles[i]);
+    }
+    
+    return noteTitles;
+    
+}
 #pragma mark - iCloud Core Data Notification Methods
 
 - (void)observeCloudActions:(NSPersistentStoreCoordinator *)coordinator

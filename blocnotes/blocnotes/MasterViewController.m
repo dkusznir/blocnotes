@@ -44,6 +44,7 @@
     [self setUpSearchController];
     
     [[NoteDataManager sharedInstance] addObserver:self forKeyPath:@"iCloudConnectivityDidChange" options:0 context:nil];
+    [[NoteDataManager sharedInstance] getNotes];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context

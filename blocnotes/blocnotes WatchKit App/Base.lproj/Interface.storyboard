@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="7702" systemVersion="14C1514" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="AgC-eL-Hgc">
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7701"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="3737"/>
+    </dependencies>
+    <scenes>
+        <!--Interface Controller-->
+        <scene sceneID="aou-V4-d1y">
+            <objects>
+                <controller id="AgC-eL-Hgc" customClass="InterfaceController">
+                    <items>
+                        <table alignment="left" id="haU-yb-9Nt">
+                            <items>
+                                <tableRow identifier="NoteRowController" id="3F0-2s-LC4" customClass="NoteRowController">
+                                    <group key="rootItem" width="1" alignment="left" id="tmz-uv-3tQ">
+                                        <items>
+                                            <label width="1" height="1" alignment="left" text="Title" id="iNd-ih-b5o"/>
+                                        </items>
+                                    </group>
+                                    <connections>
+                                        <outlet property="noteTitle" destination="iNd-ih-b5o" id="Hjn-7j-DAt"/>
+                                    </connections>
+                                </tableRow>
+                            </items>
+                        </table>
+                    </items>
+                    <connections>
+                        <outlet property="tableView" destination="haU-yb-9Nt" id="V6X-5V-Lxd"/>
+                    </connections>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="72" y="387"/>
+        </scene>
+        <!--NoteDetailController-->
+        <scene sceneID="xYJ-I5-OVu">
+            <objects>
+                <controller identifier="NoteDetailController" id="LoD-BK-xhJ" customClass="NoteDetailController">
+                    <items>
+                        <label width="1" alignment="left" text="Title" textAlignment="center" id="rre-a7-wao">
+                            <fontDescription key="font" style="UICTFontTextStyleHeadline"/>
+                        </label>
+                        <label width="1" alignment="left" text="Date" textAlignment="left" minimumScaleFactor="0.50000000000000011" id="fHE-CT-imT">
+                            <fontDescription key="font" style="UICTFontTextStyleCaption1"/>
+                        </label>
+                        <label width="1" alignment="left" text="Content" textAlignment="left" id="CMp-B0-Jyl"/>
+                    </items>
+                    <connections>
+                        <outlet property="noteContent" destination="CMp-B0-Jyl" id="BVC-fN-jAx"/>
+                        <outlet property="noteDate" destination="fHE-CT-imT" id="yzj-hX-2XX"/>
+                        <outlet property="noteTitle" destination="rre-a7-wao" id="auc-ZG-TK2"/>
+                    </connections>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="317" y="387"/>
+        </scene>
+    </scenes>
+</document>

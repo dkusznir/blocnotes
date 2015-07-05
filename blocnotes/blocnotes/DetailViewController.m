@@ -88,7 +88,7 @@ static NSString *titlePlaceholderText;
 
     else
     {
-        [self setText:self.textView.text];
+        [self setText:NSLocalizedString(self.textView.text, @"textView Text")];
     }
     
     self.textView.editable = NO;
@@ -119,7 +119,7 @@ static NSString *titlePlaceholderText;
     
     else
     {
-        self.noteTitleText = self.noteTitle.text;
+        self.noteTitleText = NSLocalizedString(self.noteTitle.text, @"noteTitle Text");
     }
     
     [self.noteTitle resignFirstResponder];
@@ -139,12 +139,12 @@ static NSString *titlePlaceholderText;
     
     if (self.textView.text == placeholderText)
     {
-        self.textView.text = @"";
+        self.textView.text = NSLocalizedString(@"", @"Empty text field");
     }
     
     if (self.noteTitle.placeholder == titlePlaceholderText)
     {
-        self.noteTitle.text = @"";
+        self.noteTitle.text = NSLocalizedString(@"", @"Empty text field");
     }
     
     NSManagedObjectContext *saveData = [self.detailItem managedObjectContext];

@@ -22,6 +22,7 @@
 - (NSURL *)applicationDocumentsDirectory;
 - (void)saveContext;
 - (void)deleteCache;
+- (NSArray *)getNotes;
 - (NSPersistentStoreCoordinator *)setPersistentStore;
 
 @end
