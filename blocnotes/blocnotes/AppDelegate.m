@@ -31,8 +31,7 @@
 
     UINavigationController *masterNavigationController = splitViewController.viewControllers[0];
     self.controller = (MasterViewController *)masterNavigationController.topViewController;
-    self.controller.managedObjectContext = [[NoteDataManager sharedInstance] managedObjectContext]
-    ;
+
     NSFileManager *fileManager = [NSFileManager defaultManager];
     self.currentiCloudToken = fileManager.ubiquityIdentityToken;
     
