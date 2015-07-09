@@ -115,7 +115,6 @@
                              [NSNumber numberWithBool:YES], NSInferMappingModelAutomaticallyOption,
                              nil];
     
-    NSLog(@"IS ICLOUD EQUAL TO YES: %hhd", [[NSUserDefaults standardUserDefaults] boolForKey:@"iCloudSetting"]);
     if ([[NSUserDefaults standardUserDefaults] boolForKey:@"iCloudSetting"] == YES)
     {
         NSMutableDictionary *addiCloud = [NSMutableDictionary dictionaryWithDictionary:options];
@@ -124,7 +123,6 @@
     }
     
     _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
-    //NSURL *storeURL = [[self applicationDocumentsDirectory] URLByAppendingPathComponent:@"blocnotes.sqlite"];
     NSURL *storeURL = [[NSFileManager defaultManager] containerURLForSecurityApplicationGroupIdentifier:@"group.dkusznir.blocnotes"];
     storeURL = [storeURL URLByAppendingPathComponent:@"blocnotes.sqlite"];
     NSError *error = nil;
@@ -195,6 +193,27 @@
     [NSFetchedResultsController deleteCacheWithName:@"Master"];
 }
 
+- (NSArray *)getNotes
+{
+    NSArray *noteTitles = [NSArray array];
+    
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Body" inManagedObjectContext:self.managedObjectContext];
+    NSFetchRequest *request = [[NSFetchRequest alloc] init];
+    
+    [request setEntity:entity];
+    [request setResultType:NSDictionaryResultType];
+    
+    NSError *error;
+    noteTitles = [self.managedObjectContext executeFetchRequest:request error:&error];
+    
+    for (int i = 0; i < noteTitles.count; i++)
+    {
+        NSLog(@"%@", noteTitles[i]);
+    }
+    
+    return noteTitles;
+    
+}
 #pragma mark - iCloud Core Data Notification Methods
 
 - (void)observeCloudActions:(NSPersistentStoreCoordinator *)coordinator
@@ -259,81 +278,4 @@
     self.iCloudConnectivityDidChange = NO;
 }
 
-/*
-- (void)setUpiCloud
-{
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    self.currentiCloudToken = fileManager.ubiquityIdentityToken;
-    
-    NSLog(@"iCloud Token: %@", self.currentiCloudToken);
-    
-    if (self.currentiCloudToken)
-    {
-        NSData *newTokenData = [NSKeyedArchiver archivedDataWithRootObject:self.currentiCloudToken];
-        [[NSUserDefaults standardUserDefaults] setObject:newTokenData forKey:@"com.apple.blocnotes.UbiquityIdentityToken"];
-    }
-    
-    else
-    {
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"com.apple.blocnotes.UbiquityIdentityToken"];
-    }
-    
-    [[NSNotificationCenter defaultCenter]
-     addObserver:self
-     selector:@selector(iCloudAccountAvailabilityChanged:)
-     name:NSUbiquityIdentityDidChangeNotification
-     object:nil];
-    
-    if ([[NSUserDefaults standardUserDefaults] boolForKey:@"hasLaunchedOnce"])
-    {
-        NSLog(@"Existing user");
-    }
-    
-    else
-    {
-        if (self.currentiCloudToken)
-        {
-            [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"hasLaunchedOnce"];
-            
-            UIAlertController *alert = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Choose Storage Option", @"Storage Option Title") message:NSLocalizedString(@"Should notes be stored in iCloud and available on all of your devices?", @"Storage Option Message") preferredStyle:UIAlertControllerStyleActionSheet];
-            UIAlertAction *iCloudEnabled = [UIAlertAction actionWithTitle:NSLocalizedString(@"Yes", @"Yes Option") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                NSLog(@"YES CLICKED");
-                self.isiCloudEnabled = YES;
-            }];
-            UIAlertAction *iCloudDisabled = [UIAlertAction actionWithTitle:NSLocalizedString(@"No", @"No Option") style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
-                NSLog(@"NO CLICKED");
-                self.isiCloudEnabled = NO;
-            }];
-            [alert addAction:iCloudEnabled];
-            [alert addAction:iCloudDisabled];
-            
-        }
-    }
-}
-
-- (void)iCloudAccountAvailabilityChanged:(NSNotification *)notification
-{
-    NSLog(@"iCloud Account Availability Changed. Token: %@", self.currentiCloudToken);
- 
-     NSFileManager *fileManager = [NSFileManager defaultManager];
-     id newiCloudToken = fileManager.ubiquityIdentityToken;
-     
-     if (newiCloudToken != self.currentiCloudToken)
-     {
-     NSLog(@"New iCloud Token: %@", self.currentiCloudToken);
-     self.currentiCloudToken = newiCloudToken;
-     [[NoteDataManager sharedInstance] deleteCache];
-     //Discard changes
-     //Empty iCloud-related data caches
-     //Refresh all iCloud-related user interface elements
-     }
-     
-     else
-     {
-     //Store content in app's local data container
-     //When account is available, move new content to iCloud (backend thread)
-     }
- 
-}
-*/
 @end
