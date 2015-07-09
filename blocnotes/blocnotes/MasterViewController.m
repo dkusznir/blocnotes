@@ -14,9 +14,9 @@
 
 @property (nonatomic, strong) NSString *text;
 @property (nonatomic, assign) BOOL isNew;
-@property (nonatomic, strong) UISearchController *searchController;
 @property (nonatomic, strong) NSArray *filteredList;
 @property (nonatomic, strong) NSFetchRequest *searchFetchRequest;
+@property (nonatomic, strong) UISearchController *searchController;
 
 @end
 
@@ -79,7 +79,7 @@
             NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
             NSManagedObject *object = nil;
             
-            if (self.searchController.active)
+            if (self.searchController.active && self.filteredList.count > 0)
             {
                 object = [self.filteredList objectAtIndex:indexPath.row];
             }
@@ -93,9 +93,7 @@
             [controller setDetailItem:object];
             controller.navigationItem.leftBarButtonItem = self.splitViewController.displayModeButtonItem;
             controller.navigationItem.leftItemsSupplementBackButton = YES;
-            [self.searchController dismissViewControllerAnimated:YES completion:nil];
-            self.searchController.searchBar.text = @"";
-            [self.tableView reloadData];
+            
         }
 
     }
@@ -113,7 +111,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    if (self.searchController.active)
+    if (self.searchController.active && self.filteredList.count > 0)
     {
         return [self.filteredList count];
     }
@@ -163,7 +161,7 @@
 {
     NSManagedObject *object = nil;
     
-    if (self.searchController.active)
+    if (self.searchController.active && self.filteredList.count > 0)
     {
         object = [self.filteredList objectAtIndex:indexPath.row];
     }
@@ -171,6 +169,8 @@
     else
     {
         object = [self.fetchedResultsController objectAtIndexPath:indexPath];
+        NSLog(@"Object at index: %@", object);
+
     }
     
     if ([[object valueForKey:@"noteTitle"] description] == nil)
@@ -290,6 +290,7 @@
     self.searchController.dimsBackgroundDuringPresentation = NO;
     
     self.searchController.searchBar.delegate = self;
+    //self.searchController.hidesNavigationBarDuringPresentation = NO;
     [self.searchController.searchBar sizeToFit];
     self.tableView.tableHeaderView = self.searchController.searchBar;
 }
@@ -323,16 +324,19 @@
         
         NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateFormat, searchAttributeTitle, searchText, searchAttributeContent, searchText];
         
-        [self.searchFetchRequest setPredicate:predicate];
-        
         NSError *error;
-        self.filteredList = [self.managedObjectContext executeFetchRequest:self.searchFetchRequest error:&error];
         
         if (searchText.length == 0)
         {
             [self.searchFetchRequest setPredicate:nil];
             self.filteredList = [self.managedObjectContext executeFetchRequest:self.searchFetchRequest error:&error];
             
+        }
+        
+        else
+        {
+            [self.searchFetchRequest setPredicate:predicate];
+            self.filteredList = [self.managedObjectContext executeFetchRequest:self.searchFetchRequest error:&error];
         }
         
         if (error)
@@ -376,8 +380,19 @@
     }
 }
 
+- (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
+{
+    NSError *error;
+    self.filteredList = [self.managedObjectContext executeFetchRequest:self.searchFetchRequest error:&error];
+    
+    if (error)
+    {
+        NSLog(@"searchFetchRequest failed: %@", [error localizedDescription]);
+    }
+}
+
 /*
-// Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed. 
+// Implementing the above methods to update the table view in response to individual changes may have performance implications if a large number of changes are made simultaneously. If this proves to be an issue, you can instead just implement controllerDidChangeContent: which notifies the delegate that all section and object changes have been processed.
  
  - (void)controllerDidChangeContent:(NSFetchedResultsController *)controller
 {
