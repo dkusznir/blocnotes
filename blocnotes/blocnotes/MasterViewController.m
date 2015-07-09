@@ -42,6 +42,17 @@
     self.navigationItem.rightBarButtonItem = addButton;
     self.detailViewController = (DetailViewController *)[[self.splitViewController.viewControllers lastObject] topViewController];
     [self setUpSearchController];
+    
+    [[NoteDataManager sharedInstance] addObserver:self forKeyPath:@"iCloudConnectivityDidChange" options:0 context:nil];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    if ([keyPath isEqualToString:@"iCloudConnectivityDidChange"])
+    {
+        NSLog(@"iCloud connectivity changed - reloading data.");
+        [self reloadAllData];
+    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -79,7 +90,7 @@
             NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
             NSManagedObject *object = nil;
             
-            if (self.searchController.active && self.filteredList.count > 0)
+            if (self.searchController.active && self.filteredList != nil)
             {
                 object = [self.filteredList objectAtIndex:indexPath.row];
             }
@@ -111,7 +122,7 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    if (self.searchController.active && self.filteredList.count > 0)
+    if (self.searchController.active && self.filteredList != nil)
     {
         return [self.filteredList count];
     }
@@ -161,7 +172,7 @@
 {
     NSManagedObject *object = nil;
     
-    if (self.searchController.active && self.filteredList.count > 0)
+    if (self.searchController.active && self.filteredList != nil)
     {
         object = [self.filteredList objectAtIndex:indexPath.row];
     }
@@ -169,7 +180,6 @@
     else
     {
         object = [self.fetchedResultsController objectAtIndexPath:indexPath];
-        NSLog(@"Object at index: %@", object);
 
     }
     

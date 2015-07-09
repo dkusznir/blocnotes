@@ -15,11 +15,13 @@
 @property (readonly, strong, nonatomic) NSManagedObjectModel *managedObjectModel;
 @property (readonly, strong, nonatomic) NSPersistentStoreCoordinator *persistentStoreCoordinator;
 @property (strong, nonatomic) NSFetchedResultsController *fetchedResultsController;
+@property (assign, nonatomic) BOOL iCloudConnectivityDidChange;
 
 + (instancetype)sharedInstance;
 
 - (NSURL *)applicationDocumentsDirectory;
 - (void)saveContext;
 - (void)deleteCache;
+- (NSPersistentStoreCoordinator *)setPersistentStore;
 
 @end
