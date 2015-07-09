@@ -12,6 +12,8 @@
 
 @interface MasterViewController () <UISearchControllerDelegate, UISearchBarDelegate, UISearchResultsUpdating>
 
+@property (strong, nonatomic) NSFetchedResultsController *fetchedResultsController;
+
 @property (nonatomic, strong) NSString *text;
 @property (nonatomic, assign) BOOL isNew;
 @property (nonatomic, strong) NSArray *filteredList;
@@ -199,45 +201,13 @@
 
 - (NSFetchedResultsController *)fetchedResultsController
 {
-    if (_fetchedResultsController != nil)
-    {
+    if (_fetchedResultsController != nil) {
         return _fetchedResultsController;
     }
-    
-    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
-    // Edit the entity name as appropriate.
-    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Body" inManagedObjectContext:self.managedObjectContext];
-    [fetchRequest setEntity:entity];
-    
-    // Set the batch size to a suitable number.
-    [fetchRequest setFetchBatchSize:20];
-    
-    // Edit the sort key as appropriate.
-    NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"timeStamp" ascending:NO];
-    NSArray *sortDescriptors = @[sortDescriptor];
-    
-    [fetchRequest setSortDescriptors:sortDescriptors];
-    
-    // Edit the section name key path and cache name if appropriate.
-    // nil for section name key path means "no sections".
-    NSFetchedResultsController *aFetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:fetchRequest
-                                                                                                managedObjectContext:self.managedObjectContext
-                                                                                                  sectionNameKeyPath:nil
-                                                                                                           cacheName:@"Master"];
-    aFetchedResultsController.delegate = self;
-    self.fetchedResultsController = aFetchedResultsController;
-    
-	NSError *error = nil;
-	if (![self.fetchedResultsController performFetch:&error])
-    {
-	     // Replace this implementation with code to handle the error appropriately.
-	     // abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development. 
-	    NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
-	    abort();
-	}
-    
+    _fetchedResultsController = [[NoteDataManager sharedInstance] fetchedResultsController];
+    _fetchedResultsController.delegate = self;
     return _fetchedResultsController;
-}    
+}
 
 - (void)controllerWillChangeContent:(NSFetchedResultsController *)controller
 {
@@ -314,7 +284,7 @@
     }
     
     _searchFetchRequest = [[NSFetchRequest alloc] init];
-    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Body" inManagedObjectContext:self.managedObjectContext];
+    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Body" inManagedObjectContext:self.fetchedResultsController.managedObjectContext];
     [_searchFetchRequest setEntity:entity];
     
     NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"noteTitle" ascending:NO selector:@selector(caseInsensitiveCompare:)];
@@ -326,7 +296,7 @@
 
 - (void)searchForText:(NSString *)searchText
 {
-    if (self.managedObjectContext)
+    if (self.fetchedResultsController.managedObjectContext)
     {
         NSString *predicateFormat = @"(%K CONTAINS[cd] %@) OR (%K CONTAINS[cd] %@)";
 
@@ -340,14 +310,14 @@
         if (searchText.length == 0)
         {
             [self.searchFetchRequest setPredicate:nil];
-            self.filteredList = [self.managedObjectContext executeFetchRequest:self.searchFetchRequest error:&error];
+            self.filteredList = [self.fetchedResultsController.managedObjectContext executeFetchRequest:self.searchFetchRequest error:&error];
             
         }
         
         else
         {
             [self.searchFetchRequest setPredicate:predicate];
-            self.filteredList = [self.managedObjectContext executeFetchRequest:self.searchFetchRequest error:&error];
+            self.filteredList = [self.fetchedResultsController.managedObjectContext executeFetchRequest:self.searchFetchRequest error:&error];
         }
         
         if (error)
@@ -394,7 +364,7 @@
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar
 {
     NSError *error;
-    self.filteredList = [self.managedObjectContext executeFetchRequest:self.searchFetchRequest error:&error];
+    self.filteredList = [self.fetchedResultsController.managedObjectContext executeFetchRequest:self.searchFetchRequest error:&error];
     
     if (error)
     {
